@@ -20,7 +20,7 @@
         </div>
         <div class="col-12">
             <label for="layanan" class="form-label">Layanan</label>
-            <select class="layanan" id="layanan" name="layanan" required></select>
+            <select class="form-control" id="layanan" name="layanan" required></select>
         </div>
         <div class="col-12">
             <label for="ongkir" class="form-label">Ongkir</label>
