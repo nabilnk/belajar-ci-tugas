@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\TransactionModel;
 use App\Models\TransactionDetailModel;
+use App\Models\ProductModel;
 
 class TransaksiController extends BaseController
 {
@@ -28,21 +29,41 @@ class TransaksiController extends BaseController
     {
         $data['items'] = $this->cart->contents();
         $data['total'] = $this->cart->total();
+        $data['menu_aktif'] = 'keranjang';
         return view('v_keranjang', $data);
     }
 
+
     public function cart_add()
-    {
-        $this->cart->insert(array(
-            'id'        => $this->request->getPost('id'),
-            'qty'       => 1,
-            'price'     => $this->request->getPost('harga'),
-            'name'      => $this->request->getPost('nama'),
-            'options'   => array('foto' => $this->request->getPost('foto'))
-        ));
-        session()->setflashdata('success', 'Produk berhasil ditambahkan ke keranjang. (<a href="' . base_url() . 'keranjang">Lihat</a>)');
-        return redirect()->to(base_url('/'));
+{
+    $id_produk = $this->request->getPost('id');
+    $produkModel = new \App\Models\ProductModel();
+    $produk = $produkModel->find($id_produk);
+
+    if ($produk) {
+        $diskon = session()->get('diskon') ?? 0;
+        
+        $harga_setelah_diskon = $produk['harga'] - $diskon;
+        $harga_setelah_diskon = max(0, $harga_setelah_diskon); 
+
+        $this->cart->insert([
+            'id'      => $produk['id'],
+            'qty'     => 1,
+            'price'   => $harga_setelah_diskon,
+            'name'    => $produk['nama'],
+            'options' => [
+                'foto'       => $produk['foto'],
+                'harga_asli' => $produk['harga'] 
+            ]
+        ]);
+        
+        session()->setFlashdata('success', 'Produk berhasil ditambahkan ke keranjang.');
+    } else {
+        session()->setFlashdata('failed', 'Produk tidak ditemukan.');
     }
+    return redirect()->to(base_url('keranjang'));
+}
+
 
     public function cart_clear()
     {
@@ -51,19 +72,30 @@ class TransaksiController extends BaseController
         return redirect()->to(base_url('keranjang'));
     }
 
-    public function cart_edit()
-    {
-        $i = 1;
-        foreach ($this->cart->contents() as $value) {
-            $this->cart->update(array(
-                'rowid' => $value['rowid'],
-                'qty'   => $this->request->getPost('qty' . $i++)
-            ));
-        }
 
-        session()->setflashdata('success', 'Keranjang Berhasil Diedit');
-        return redirect()->to(base_url('keranjang'));
+
+    public function cart_edit()
+{
+    $cartData = $this->request->getPost();
+    $data_update = [];
+
+    if (!empty($cartData['rowid'])) {
+        for ($i = 0; $i < count($cartData['rowid']); $i++) {
+            $data_update[] = [
+                'rowid' => $cartData['rowid'][$i],
+                'qty'   => $cartData['qty'][$i]
+            ];
+        }
+        $this->cart->update($data_update);
+        
+        session()->setFlashdata('success', 'Keranjang Berhasil Diperbarui');
+    } else {
+        session()->setFlashdata('failed', 'Tidak ada data untuk diperbarui.');
     }
+
+    return redirect()->to(base_url('keranjang'));
+}
+
 
     public function cart_delete($rowid)
     {
@@ -82,7 +114,6 @@ class TransaksiController extends BaseController
 
         public function getLocation()
     {
-            //keyword pencarian yang dikirimkan dari halaman checkout
         $search = $this->request->getGet('search');
 
         $response = $this->client->request(
@@ -101,11 +132,8 @@ class TransaksiController extends BaseController
 
     public function getCost()
     { 
-            //ID lokasi yang dikirimkan dari halaman checkout
         $destination = $this->request->getGet('destination');
 
-            //parameter daerah asal pengiriman, berat produk, dan kurir dibuat statis
-        //valuenya => 64999 : PEDURUNGAN TENGAH , 1000 gram, dan JNE
         $response = $this->client->request(
             'POST', 
             'https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost', [
@@ -138,7 +166,8 @@ class TransaksiController extends BaseController
         return $this->response->setJSON($body['data']);
     }
 
-        public function buy()
+
+    public function buy()
     {
         if ($this->request->getPost()) { 
             $dataForm = [
@@ -150,28 +179,28 @@ class TransaksiController extends BaseController
                 'created_at' => date("Y-m-d H:i:s"),
                 'updated_at' => date("Y-m-d H:i:s")
             ];
-
             $this->transaction->insert($dataForm);
-
             $last_insert_id = $this->transaction->getInsertID();
 
             foreach ($this->cart->contents() as $value) {
+                // Hitung diskon yang didapat untuk item ini
+                $harga_asli = $value['options']['harga_asli'] ?? $value['price'];
+                $diskon_per_item = $harga_asli - $value['price'];
+
                 $dataFormDetail = [
                     'transaction_id' => $last_insert_id,
                     'product_id' => $value['id'],
                     'jumlah' => $value['qty'],
-                    'diskon' => 0,
+                    'diskon' => $diskon_per_item, // <-- PERBAIKAN: Catat diskonnya
                     'subtotal_harga' => $value['qty'] * $value['price'],
                     'created_at' => date("Y-m-d H:i:s"),
                     'updated_at' => date("Y-m-d H:i:s")
                 ];
-
                 $this->transaction_detail->insert($dataFormDetail);
             }
-
             $this->cart->destroy();
-    
-            return redirect()->to(base_url());
+            session()->setFlashdata('success', 'Transaksi berhasil!');
+            return redirect()->to(base_url('profile'));
         }
     }
 }

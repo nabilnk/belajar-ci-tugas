@@ -19,6 +19,7 @@ class ProdukController extends BaseController
         $product = $this->product->findAll();
         $data['product'] = $product;
 
+        $data['menu_aktif'] = 'produk';
         return view('v_produk', $data);
     }
 

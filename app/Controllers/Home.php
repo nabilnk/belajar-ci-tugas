@@ -27,6 +27,7 @@ class Home extends BaseController
         $product = $this->product->findAll();
         $data['product'] = $product;
 
+        $data['menu_aktif'] = 'dashboard';
         return view('v_home', $data);
     }
 
@@ -52,6 +53,7 @@ class Home extends BaseController
 
         $data['product'] = $product;
 
+        $data['menu_aktif'] = 'profile';
         return view('v_profile', $data);
     }
 

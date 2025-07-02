@@ -19,6 +19,7 @@ class ProdukCategoryController extends BaseController
         $categories = $this->category->findAll();
         $data['categories'] = $categories;
 
+        $data['menu_aktif'] = 'produkkategori';
         return view('v_produkkategori', $data);
     }
 

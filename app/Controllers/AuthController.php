@@ -38,7 +38,6 @@ class AuthController extends BaseController
                         'role' => $dataUser['role'],
                         'isLoggedIn' => TRUE
                     ]);
-
                     return redirect()->to(base_url('/'));
                 } else {
                     session()->setFlashdata('failed', 'Kombinasi Username & Password Salah');
@@ -62,4 +61,5 @@ class AuthController extends BaseController
         session()->destroy();
         return redirect()->to('login');
     }
+
 }

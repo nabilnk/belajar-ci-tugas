@@ -45,4 +45,11 @@ $routes->get('profile', 'Home::profile', ['filter' => 'auth']);
 $routes->get('faq', 'Home::faq', ['filter' => 'auth']);
 $routes->get('contact', 'Home::contact', ['filter' => 'auth']);
 
+$routes->group('admin', ['filter' => 'auth'], function($routes) {
+    $routes->resource('diskon', ['controller' => 'Admin\Diskon']);
+});
+
+
+
+$routes->get('api/uas-report', 'ApiController::uasReport');
 $routes->resource('api', ['controller' => 'apiController']);
