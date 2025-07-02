@@ -1,10 +1,4 @@
-Tentu saja. Anda benar sekali. Ini adalah langkah terakhir yang sangat penting dan saya minta maaf karena belum memberikannya secara lengkap.
 
-Anda telah bekerja keras menyelesaikan semua masalah teknis, sekarang saatnya menyempurnakan dokumentasinya sesuai dengan Poin 5 di lembar soal UAS.
-
-Berikut adalah isi file README.md yang lengkap, detail, dan profesional. Anda bisa langsung menyalin seluruh teks di bawah ini dan menempelkannya ke dalam file README.md di root proyek Anda.
-
-Generated markdown
 # Proyek E-Commerce "Toko" - UAS Pemrograman Web Lanjut
 
 Ini adalah proyek aplikasi web E-Commerce yang dibangun menggunakan framework **CodeIgniter 4**. Proyek ini merupakan hasil pengerjaan Ujian Akhir Semester (UAS) untuk mata kuliah Pemrograman Web Lanjut, yang mencakup berbagai fitur mulai dari manajemen produk, transaksi, hingga implementasi fitur diskon dan webservice.
